@@ -12,7 +12,7 @@
 | API Agents     | Direct API calls — Qwen, DeepSeek, Doubao, Kimi |
 | Browser        | Chrome DevTools MCP                             |
 | Storage        | StorageAdapter — local (SQLite), mysql, postgres |
-| Build          | tsup                                            |
+| Build          | tsc                                             |
 | Test           | Vitest                                          |
 | Package        | npm                                             |
 
