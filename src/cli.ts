@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { brandCommand } from './commands/brand.js';
+import { connectCommand } from './commands/connect.js';
 
 const program = new Command();
 
@@ -10,5 +11,6 @@ program
   .version('0.1.0');
 
 program.addCommand(brandCommand);
+program.addCommand(connectCommand);
 
 program.parse();
