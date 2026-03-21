@@ -29,32 +29,7 @@ const DEFAULT_CONFIG: GrowConfig = {
   },
 };
 
-type LegacyGoogleConfig = {
-  client_id: string;
-  client_secret: string;
-  site?: string;
-  sites?: string[];
-};
-
-function normalizeGoogleConfig(google: LegacyGoogleConfig | undefined): GoogleConfig | undefined {
-  if (!google) {
-    return undefined;
-  }
-
-  const sites = Array.isArray(google.sites)
-    ? google.sites
-    : typeof google.site === 'string' && google.site.length > 0
-      ? [google.site]
-      : [];
-
-  return {
-    client_id: google.client_id,
-    client_secret: google.client_secret,
-    sites,
-  };
-}
-
-function normalizeConfig(config: Partial<GrowConfig> & { google?: LegacyGoogleConfig }): GrowConfig {
+function normalizeConfig(config: Partial<GrowConfig>): GrowConfig {
   return {
     ...DEFAULT_CONFIG,
     ...config,
@@ -62,7 +37,6 @@ function normalizeConfig(config: Partial<GrowConfig> & { google?: LegacyGoogleCo
       ...DEFAULT_CONFIG.storage,
       ...config.storage,
     },
-    google: normalizeGoogleConfig(config.google),
   };
 }
 
