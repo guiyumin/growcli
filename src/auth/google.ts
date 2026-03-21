@@ -84,15 +84,72 @@ export async function exchangeCodeForTokens(
   return googleTokens;
 }
 
+function getAuthenticatedClient(
+  clientId: string,
+  clientSecret: string,
+  tokens: GoogleTokens,
+) {
+  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, REDIRECT_URI);
+  oauth2Client.setCredentials(tokens);
+  oauth2Client.on('tokens', (newTokens) => {
+    const merged: GoogleTokens = {
+      access_token: newTokens.access_token ?? tokens.access_token,
+      refresh_token: newTokens.refresh_token ?? tokens.refresh_token,
+      expiry_date: newTokens.expiry_date ?? tokens.expiry_date,
+    };
+    saveTokens(merged);
+  });
+  return oauth2Client;
+}
+
 export async function listSites(
   clientId: string,
   clientSecret: string,
   tokens: GoogleTokens
 ): Promise<string[]> {
-  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, REDIRECT_URI);
-  oauth2Client.setCredentials(tokens);
-
+  const oauth2Client = getAuthenticatedClient(clientId, clientSecret, tokens);
   const webmasters = google.webmasters({ version: 'v3', auth: oauth2Client });
   const res = await webmasters.sites.list();
   return (res.data.siteEntry ?? []).map(entry => entry.siteUrl!);
+}
+
+export interface SearchAnalyticsRow {
+  keys: string[];
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+}
+
+export async function fetchSearchAnalytics(
+  clientId: string,
+  clientSecret: string,
+  tokens: GoogleTokens,
+  params: {
+    siteUrl: string;
+    startDate: string;
+    endDate: string;
+    dimensions?: string[];
+    rowLimit?: number;
+  },
+): Promise<SearchAnalyticsRow[]> {
+  const oauth2Client = getAuthenticatedClient(clientId, clientSecret, tokens);
+  const webmasters = google.webmasters({ version: 'v3', auth: oauth2Client });
+  const res = await webmasters.searchanalytics.query({
+    siteUrl: params.siteUrl,
+    requestBody: {
+      startDate: params.startDate,
+      endDate: params.endDate,
+      dimensions: params.dimensions ?? [],
+      rowLimit: params.rowLimit ?? 25000,
+    },
+  });
+
+  return (res.data.rows ?? []).map(row => ({
+    keys: row.keys ?? [],
+    clicks: row.clicks ?? 0,
+    impressions: row.impressions ?? 0,
+    ctr: row.ctr ?? 0,
+    position: row.position ?? 0,
+  }));
 }

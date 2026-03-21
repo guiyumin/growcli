@@ -2,6 +2,7 @@
 import { Command } from 'commander';
 import { brandCommand } from './commands/brand.js';
 import { connectCommand } from './commands/connect.js';
+import { gscCommand } from './commands/gsc.js';
 
 const program = new Command();
 
@@ -12,5 +13,6 @@ program
 
 program.addCommand(brandCommand);
 program.addCommand(connectCommand);
+program.addCommand(gscCommand);
 
 program.parse();
